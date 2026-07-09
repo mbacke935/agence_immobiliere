@@ -1,0 +1,76 @@
+/* css/style.css */
+
+/* Variables globales pour maintenir la cohérence */
+:root {
+    --main-bg: #f8f9fa;
+    --card-shadow: rgba(0, 0, 0, 0.05) 0px 5px 15px 0px;
+    --card-hover-shadow: rgba(0, 0, 0, 0.15) 0px 10px 25px 0px;
+}
+
+body {
+    background-color: var(--main-bg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Forcer le footer en bas si la page a peu de contenu */
+main, .container {
+    flex: 1;
+}
+
+/* --- Cartes des Biens (Index) --- */
+.property-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+.property-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.property-card .card-img-top {
+    aspect-ratio: 16/9;
+    object-fit: cover;
+}
+
+/* --- Badge de Type (Villa / Appartement) --- */
+.badge-type {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 10;
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* --- Carrousel de la page Détails --- */
+.carousel-detail .carousel-item img {
+    height: 500px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* --- Bouton Favoris (Animation) --- */
+.btn-favoris {
+    transition: transform 0.2s ease;
+}
+.btn-favoris:hover {
+    transform: scale(1.1);
+}
+
+/* --- Tables des Back-offices (Commercial / Client) --- */
+.table-responsive-custom {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+}
