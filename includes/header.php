@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Détection dynamique pour savoir si on est dans un sous-dossier (auth, client, commercial)
+// On force le préfixe relatif selon le dossier où se trouve le script
 $current_dir = basename(dirname($_SERVER['SCRIPT_NAME']));
 $prefix = ($current_dir === 'auth' || $current_dir === 'client' || $current_dir === 'commercial') ? '../' : '';
 ?>

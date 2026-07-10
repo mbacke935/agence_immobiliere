@@ -51,7 +51,8 @@ try {
                     <div class="carousel-inner">
                         <?php foreach ($images as $index => $img): ?>
                             <div class="carousel-item <?php echo $index === 0 ? 'active' : ''; ?>">
-                                <img src="uploads/biens/<?php echo htmlspecialchars($img['chemin_fichier']); ?>" class="d-block w-100" alt="Image de l'offre">
+                                <!-- Chemin de l'image corrigé ici -->
+                                <img src="uploads/<?php echo htmlspecialchars($img['chemin_fichier']); ?>" class="d-block w-100" alt="Image de l'offre" style="height: 450px; object-fit: cover; border-radius: 6px;">
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -82,11 +83,7 @@ try {
                     <!-- Bouton Favoris dynamique -->
                     <?php if (isset($_SESSION['id_user']) && $_SESSION['role'] === 'Client'): ?>
                         <a href="client/favoris.php?id_bien=<?php echo $bien['id_bien']; ?>&action=toggle" class="btn btn-outline-danger btn-favoris rounded-circle p-2">
-                            <?php if ($is_favori): ?>
-                                ❤️ <!-- Coeur plein -->
-                            <?php else: ?>
-                                🤍 <!-- Coeur vide -->
-                            <?php endif; ?>
+                            <?php echo $is_favori ? '❤️' : '🤍'; ?>
                         </a>
                     <?php endif; ?>
                 </div>

@@ -75,19 +75,23 @@ try {
                 <div class="col">
                     <div class="card h-100 property-card position-relative">
                         <!-- Badge de type -->
-                        <span class="badge-type <?php echo $bien['type'] === 'Villa' ? 'bg-success' : 'bg-primary'; ?> text-white">
+                        <span class="badge position-absolute top-0 start-0 m-3 <?php echo $bien['type'] === 'Villa' ? 'bg-success' : 'bg-primary'; ?> text-white z-index-1" style="z-index: 10;">
                             <?php echo htmlspecialchars($bien['type']); ?>
                         </span>
                         
-                        <!-- Image de couverture -->
+                        <!-- Image de couverture corrigée -->
                         <?php 
-                            $image_url = !empty($bien['chemin_fichier']) ? "uploads/biens/" . $bien['chemin_fichier'] : "https://via.placeholder.com/600x400?text=Aucune+Image";
+                            if (!empty($bien['chemin_fichier'])) {
+                                $image_url = "uploads/" . $bien['chemin_fichier'];
+                            } else {
+                                $image_url = "https://via.placeholder.com/600x400?text=Aucune+Image";
+                            }
                         ?>
-                        <img src="<?php echo $image_url; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($bien['titre']); ?>">
+                        <img src="<?php echo $image_url; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($bien['titre']); ?>" style="height: 220px; object-fit: cover;">
                         
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title fw-bold text-dark mb-1"><?php echo htmlspecialchars($bien['titre']); ?></h5>
-                            <p class="text-muted small mb-2"><i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($bien['adresse']); ?></p>
+                            <p class="text-muted small mb-2">📍 <?php echo htmlspecialchars($bien['adresse']); ?></p>
                             
                             <div class="d-flex justify-content-between mb-3 text-secondary small">
                                 <span><strong><?php echo htmlspecialchars($bien['superficie']); ?></strong> m²</span>

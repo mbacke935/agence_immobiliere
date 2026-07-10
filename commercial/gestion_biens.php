@@ -11,7 +11,7 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'Commercial') {
 $erreur = '';
 $succes = '';
 
-// --- 1. TRAITEMENT DE L'AJOUT D'UN BIEN ---
+// --- 1. TRAITEMENT DE L'AJOUT D'UN BIEN MIGRÉ VERS MULTI-IMAGES ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_bien'])) {
     $titre = trim($_POST['titre']);
     $description = trim($_POST['description']);
@@ -38,29 +38,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_bien'])) {
             ]);
 
             $id_bien = $pdo->lastInsertId();
-            $nom_image = ($type === 'Villa') ? 'villa_default.jpg' : 'appartement_default.jpg';
+            $images_uploaded = false;
 
-            // Gestion de l'upload d'image
-            if (isset($_FILES['image_bien']) && $_FILES['image_bien']['error'] === 0) {
+            // Gestion des uploads multiples d'images
+            if (isset($_FILES['images_bien']) && !empty($_FILES['images_bien']['name'][0])) {
                 $dossier_cible = "../uploads/";
                 if (!is_dir($dossier_cible)) {
                     mkdir($dossier_cible, 0777, true);
                 }
-                
-                $extension = strtolower(pathinfo($_FILES['image_bien']['name'], PATHINFO_EXTENSION));
-                $extensions_autorisees = ['jpg', 'jpeg', 'png', 'webp'];
 
-                if (in_array($extension, $extensions_autorisees)) {
-                    $nom_image = "bien_" . $id_bien . "_" . time() . "." . $extension;
-                    move_uploaded_file($_FILES['image_bien']['tmp_name'], $dossier_cible . $nom_image);
+                $extensions_autorisees = ['jpg', 'jpeg', 'png', 'webp'];
+                $sqlImg = "INSERT INTO IMAGES (chemin_fichier, is_principal, id_bien) VALUES (:chemin, :is_principal, :id_bien)";
+                $stmtImg = $pdo->prepare($sqlImg);
+
+                foreach ($_FILES['images_bien']['name'] as $index => $nom_original) {
+                    if ($_FILES['images_bien']['error'][$index] === 0) {
+                        $extension = strtolower(pathinfo($nom_original, PATHINFO_EXTENSION));
+
+                        if (in_array($extension, $extensions_autorisees)) {
+                            $nom_image = "bien_" . $id_bien . "_" . time() . "_" . $index . "." . $extension;
+                            
+                            if (move_uploaded_file($_FILES['images_bien']['tmp_name'][$index], $dossier_cible . $nom_image)) {
+                                // La première image de la boucle devient l'image principale
+                                $is_principal = ($index === 0) ? 1 : 0;
+                                $stmtImg->execute([
+                                    'chemin' => $nom_image,
+                                    'is_principal' => $is_principal,
+                                    'id_bien' => $id_bien
+                                ]);
+                                $images_uploaded = true;
+                            }
+                        }
+                    }
                 }
             }
 
-            $sqlImg = "INSERT INTO IMAGES (chemin_fichier, is_principal, id_bien) VALUES (:chemin, 1, :id_bien)";
-            $pdo->prepare($sqlImg)->execute(['chemin' => $nom_image, 'id_bien' => $id_bien]);
+            // Si aucune image n'a pu être uploadée, on met une image par défaut
+            if (!$images_uploaded) {
+                $nom_image_default = ($type === 'Villa') ? 'villa_default.jpg' : 'appartement_default.jpg';
+                $sqlImg = "INSERT INTO IMAGES (chemin_fichier, is_principal, id_bien) VALUES (:chemin, 1, :id_bien)";
+                $pdo->prepare($sqlImg)->execute(['chemin' => $nom_image_default, 'id_bien' => $id_bien]);
+            }
 
             $pdo->commit();
-            $succes = "Le bien immobilier a été ajouté avec succès !";
+            $succes = "Le bien immobilier et ses images ont été enregistrés avec succès !";
         } catch (PDOException $e) {
             $pdo->rollBack();
             $erreur = "Erreur lors de l'enregistrement : " . $e->getMessage();
@@ -98,9 +119,11 @@ try {
                             <option value="Villa">Villa</option>
                         </select>
                     </div>
+                    <!-- Ajout de l'attribut multiple et des crochets [] au nom du fichier -->
                     <div class="mb-2">
-                        <label class="form-label small fw-bold text-secondary">Image du bien</label>
-                        <input type="file" name="image_bien" class="form-control form-control-sm" accept="image/*">
+                        <label class="form-label small fw-bold text-secondary">Images du bien (Une ou plusieurs)</label>
+                        <input type="file" name="images_bien[]" class="form-control form-control-sm" accept="image/*" multiple>
+                        <small class="text-muted text-xs">Vous pouvez sélectionner plusieurs fichiers à la fois.</small>
                     </div>
                     <div class="mb-2">
                         <label class="form-label small fw-bold text-secondary">Adresse *</label>
