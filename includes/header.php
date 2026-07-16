@@ -13,9 +13,15 @@ $prefix = ($current_dir === 'auth' || $current_dir === 'client' || $current_dir 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agence Immobilière</title>
+    <title>ImmoAgence — Résidences d'exception</title>
+    <!-- Polices premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS 5.3.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <!-- Styles personnalisés -->
     <link rel="stylesheet" href="<?php echo $prefix; ?>css/style.css">
 </head>
@@ -23,7 +29,7 @@ $prefix = ($current_dir === 'auth' || $current_dir === 'client' || $current_dir 
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="<?php echo $prefix; ?>index.php">ImmoAgence</a>
+        <a class="navbar-brand fw-bold" href="<?php echo $prefix; ?>index.php"><i class="bi bi-building me-2"></i>ImmoAgence</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>

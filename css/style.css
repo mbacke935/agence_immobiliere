@@ -1,29 +1,266 @@
 /* css/style.css */
+/* ==========================================================================
+   ImmoAgence — Design premium (navy & or)
+   ========================================================================== */
 
-/* Variables globales pour maintenir la cohérence */
 :root {
-    --main-bg: #f8f9fa;
-    --card-shadow: rgba(0, 0, 0, 0.05) 0px 5px 15px 0px;
-    --card-hover-shadow: rgba(0, 0, 0, 0.15) 0px 10px 25px 0px;
+    --navy-950: #081119;
+    --navy-900: #0d2438;
+    --navy-800: #133a56;
+    --navy-700: #1c4d70;
+
+    --gold-100: #f6ecd9;
+    --gold-300: #e2c383;
+    --gold-500: #c6a15b;
+    --gold-600: #ad893f;
+    --gold-700: #8f7233;
+
+    --emerald-600: #2f6d45;
+    --emerald-700: #24532f;
+
+    --brick-600: #9c3b3f;
+    --brick-700: #7c2f32;
+
+    --cream-50: #faf7f2;
+    --cream-100: #f2ece1;
+
+    --ink-900: #1b232c;
+    --ink-700: #3d4750;
+    --ink-500: #6b7580;
+
+    --border-soft: #e6ded0;
+
+    --card-shadow: rgba(13, 36, 56, 0.08) 0px 6px 20px 0px;
+    --card-hover-shadow: rgba(13, 36, 56, 0.18) 0px 16px 36px 0px;
+
+    --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-body: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    background-color: var(--main-bg);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--cream-50);
+    font-family: var(--font-body);
+    color: var(--ink-900);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-/* Forcer le footer en bas si la page a peu de contenu */
 main, .container {
     flex: 1;
+}
+
+h1, h2, h3, h4, h5, h6,
+.fw-display {
+    font-family: var(--font-display);
+    letter-spacing: 0.2px;
+}
+
+a {
+    color: var(--navy-800);
+}
+a:hover {
+    color: var(--gold-600);
+}
+
+/* --- Couleurs sémantiques (surcharge Bootstrap) --- */
+.text-primary { color: var(--navy-800) !important; }
+.text-dark { color: var(--ink-900) !important; }
+.text-secondary { color: var(--ink-700) !important; }
+.text-muted { color: var(--ink-500) !important; }
+
+.bg-primary { background-color: var(--navy-800) !important; }
+.bg-success { background-color: var(--emerald-600) !important; }
+.bg-danger { background-color: var(--brick-600) !important; }
+.bg-dark { background-color: var(--navy-950) !important; }
+.bg-light { background-color: var(--cream-100) !important; }
+.bg-warning { background-color: var(--gold-300) !important; }
+
+/* --- Boutons --- */
+.btn {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--gold-500);
+    --bs-btn-border-color: var(--gold-500);
+    --bs-btn-hover-bg: var(--gold-600);
+    --bs-btn-hover-border-color: var(--gold-600);
+    --bs-btn-active-bg: var(--gold-700);
+    --bs-btn-active-border-color: var(--gold-700);
+    --bs-btn-color: var(--navy-950);
+    --bs-btn-hover-color: var(--navy-950);
+    --bs-btn-active-color: var(--navy-950);
+    --bs-btn-disabled-bg: var(--gold-300);
+    --bs-btn-disabled-border-color: var(--gold-300);
+    box-shadow: rgba(198, 161, 91, 0.35) 0px 8px 18px 0px;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--navy-800);
+    --bs-btn-border-color: var(--navy-800);
+    --bs-btn-hover-bg: var(--navy-800);
+    --bs-btn-hover-border-color: var(--navy-800);
+    --bs-btn-active-bg: var(--navy-900);
+    --bs-btn-active-border-color: var(--navy-900);
+}
+
+.btn-outline-dark {
+    --bs-btn-color: var(--navy-900);
+    --bs-btn-border-color: var(--navy-900);
+    --bs-btn-hover-bg: var(--navy-900);
+    --bs-btn-hover-border-color: var(--navy-900);
+}
+
+.btn-outline-light {
+    --bs-btn-color: var(--gold-300);
+    --bs-btn-border-color: rgba(230, 195, 131, 0.55);
+    --bs-btn-hover-bg: var(--gold-300);
+    --bs-btn-hover-color: var(--navy-950);
+    --bs-btn-hover-border-color: var(--gold-300);
+}
+
+.btn-success {
+    --bs-btn-bg: var(--emerald-600);
+    --bs-btn-border-color: var(--emerald-600);
+    --bs-btn-hover-bg: var(--emerald-700);
+    --bs-btn-hover-border-color: var(--emerald-700);
+}
+
+.btn-danger, .btn-outline-danger {
+    --bs-btn-color: var(--brick-600);
+    --bs-btn-border-color: var(--brick-600);
+    --bs-btn-bg: transparent;
+    --bs-btn-hover-bg: var(--brick-600);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-border-color: var(--brick-600);
+}
+.btn-danger {
+    --bs-btn-bg: var(--brick-600);
+    --bs-btn-color: #fff;
+    --bs-btn-hover-bg: var(--brick-700);
+}
+
+.btn-warning {
+    --bs-btn-bg: var(--gold-300);
+    --bs-btn-border-color: var(--gold-300);
+    --bs-btn-color: var(--navy-950);
+    --bs-btn-hover-bg: var(--gold-500);
+    --bs-btn-hover-border-color: var(--gold-500);
+}
+
+.btn-xs {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    border-radius: 30px;
+}
+
+/* --- Badges --- */
+.badge.bg-primary { background-color: var(--navy-800) !important; color: var(--gold-100); }
+.badge.bg-success { background-color: var(--emerald-600) !important; }
+.badge.bg-danger { background-color: var(--brick-600) !important; }
+.badge.bg-warning { background-color: var(--gold-300) !important; color: var(--navy-950) !important; }
+.badge.bg-secondary { background-color: var(--ink-500) !important; }
+
+/* --- Navbar --- */
+.navbar.bg-dark {
+    background: linear-gradient(180deg, var(--navy-950) 0%, var(--navy-900) 100%) !important;
+    box-shadow: 0 2px 18px rgba(0, 0, 0, 0.25);
+}
+.navbar-brand {
+    font-family: var(--font-display);
+    color: var(--gold-300) !important;
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+}
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(250, 247, 242, 0.82) !important;
+    position: relative;
+    padding-bottom: 4px;
+    margin: 0 4px;
+    transition: color 0.2s ease;
+}
+.navbar-dark .navbar-nav .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0%;
+    height: 2px;
+    background-color: var(--gold-500);
+    transition: width 0.25s ease;
+}
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: var(--gold-300) !important;
+}
+.navbar-dark .navbar-nav .nav-link:hover::after {
+    width: 100%;
+}
+.navbar-text {
+    color: rgba(250, 247, 242, 0.75) !important;
+}
+.navbar-text strong {
+    color: var(--gold-300);
+}
+
+/* --- Hero (Accueil) --- */
+.hero-premium {
+    background:
+        linear-gradient(160deg, rgba(8, 17, 25, 0.92) 0%, rgba(13, 36, 56, 0.88) 60%, rgba(28, 77, 112, 0.82) 100%),
+        radial-gradient(circle at 80% 0%, rgba(198, 161, 91, 0.25), transparent 55%);
+    color: var(--cream-50);
+    border-radius: 0 0 28px 28px;
+    padding: 4.5rem 0 7.5rem;
+    margin-bottom: -4.5rem;
+    position: relative;
+}
+.hero-premium .eyebrow {
+    color: var(--gold-300);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.hero-premium h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+}
+.hero-premium p {
+    color: rgba(250, 247, 242, 0.78);
+    max-width: 640px;
+}
+
+/* --- Carte de recherche & filtres --- */
+.search-card {
+    position: relative;
+    z-index: 5;
+    border: none;
+    border-radius: 18px;
+    box-shadow: var(--card-hover-shadow);
+    background-color: #ffffff;
+    border-top: 4px solid var(--gold-500);
+}
+
+.form-label {
+    color: var(--ink-700);
+}
+
+.form-control, .form-select {
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--gold-500);
+    box-shadow: 0 0 0 0.2rem rgba(198, 161, 91, 0.25);
 }
 
 /* --- Cartes des Biens (Index) --- */
 .property-card {
     border: none;
-    border-radius: 12px;
+    border-radius: 16px;
     box-shadow: var(--card-shadow);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     background-color: #ffffff;
@@ -31,7 +268,7 @@ main, .container {
 }
 
 .property-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-6px);
     box-shadow: var(--card-hover-shadow);
 }
 
@@ -40,37 +277,169 @@ main, .container {
     object-fit: cover;
 }
 
+.property-card .card-title {
+    font-family: var(--font-display);
+}
+
+.property-card .price-tag {
+    color: var(--gold-700);
+    font-family: var(--font-display);
+    font-weight: 700;
+}
+
 /* --- Badge de Type (Villa / Appartement) --- */
 .badge-type {
     position: absolute;
     top: 15px;
     left: 15px;
     z-index: 10;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 30px;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.3px;
+    box-shadow: rgba(0,0,0,0.18) 0 4px 10px 0;
 }
 
 /* --- Carrousel de la page Détails --- */
+.carousel-detail {
+    border-radius: 16px;
+}
 .carousel-detail .carousel-item img {
     height: 500px;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 10px;
+}
+.carousel-detail .carousel-indicators [data-bs-target] {
+    background-color: var(--gold-500);
+}
+.carousel-detail .carousel-control-prev-icon,
+.carousel-detail .carousel-control-next-icon {
+    background-color: rgba(13, 36, 56, 0.55);
+    border-radius: 50%;
+    padding: 18px;
+    background-size: 50%;
 }
 
 /* --- Bouton Favoris (Animation) --- */
 .btn-favoris {
     transition: transform 0.2s ease;
+    border-color: var(--brick-600) !important;
 }
 .btn-favoris:hover {
-    transform: scale(1.1);
+    transform: scale(1.12);
+}
+
+/* --- Stat tiles (Détail bien) --- */
+.stat-tile {
+    background-color: var(--cream-100);
+    border-radius: 12px;
+    padding: 1rem 0.5rem;
+    text-align: center;
+}
+.stat-tile .value {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--navy-900);
+}
+.stat-tile .label {
+    color: var(--ink-500);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* --- Cartes génériques (formulaires, auth) --- */
+.card {
+    border-radius: 16px;
+}
+
+.auth-split {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--card-hover-shadow);
+}
+.auth-visual {
+    background:
+        linear-gradient(165deg, rgba(8, 17, 25, 0.92), rgba(28, 77, 112, 0.85)),
+        radial-gradient(circle at 15% 85%, rgba(198, 161, 91, 0.3), transparent 55%);
+    color: var(--cream-50);
+    padding: 3rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100%;
+}
+.auth-visual .eyebrow {
+    color: var(--gold-300);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.auth-visual h2 {
+    font-family: var(--font-display);
+}
+.auth-visual p {
+    color: rgba(250, 247, 242, 0.75);
+}
+.auth-form-panel {
+    background-color: #ffffff;
+    padding: 3rem 2.5rem;
 }
 
 /* --- Tables des Back-offices (Commercial / Client) --- */
 .table-responsive-custom {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 20px;
     box-shadow: var(--card-shadow);
+}
+
+.table-responsive-custom .table thead.table-light th {
+    background-color: var(--navy-900);
+    color: var(--gold-100);
+    border: none;
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+}
+.table-responsive-custom .table thead.table-light tr th:first-child { border-top-left-radius: 10px; }
+.table-responsive-custom .table thead.table-light tr th:last-child { border-top-right-radius: 10px; }
+
+.table-hover > tbody > tr:hover > * {
+    background-color: var(--gold-100);
+    --bs-table-accent-bg: var(--gold-100);
+}
+
+/* --- Alertes --- */
+.alert-success { background-color: #eaf3ec; color: var(--emerald-700); border-color: #cfe4d4; }
+.alert-danger { background-color: #f6e9ea; color: var(--brick-700); border-color: #eccfd0; }
+.alert-warning { background-color: var(--gold-100); color: var(--gold-700); border-color: var(--gold-300); }
+.alert-info { background-color: #e8eef2; color: var(--navy-800); border-color: #cddbe3; }
+
+/* --- Footer --- */
+.footer-premium {
+    background: var(--navy-950);
+    color: rgba(250, 247, 242, 0.75);
+    border-top: 3px solid var(--gold-500);
+}
+.footer-premium h6 {
+    font-family: var(--font-display);
+    color: var(--gold-300);
+}
+.footer-premium a {
+    color: rgba(250, 247, 242, 0.7);
+    text-decoration: none;
+}
+.footer-premium a:hover {
+    color: var(--gold-300);
+}
+.footer-premium .footer-bottom {
+    border-top: 1px solid rgba(250, 247, 242, 0.12);
 }

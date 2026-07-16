@@ -46,7 +46,7 @@ try {
 ?>
 
 <main class="container my-5">
-    <h3 class="fw-bold text-dark mb-2">Gestion des Comptes</h3>
+    <h3 class="fw-bold text-dark mb-2"><i class="bi bi-people me-2"></i>Gestion des Comptes</h3>
     <p class="text-muted small mb-4">Consultez la liste des utilisateurs et suspendez ou activez des accès à la plateforme.</p>
 
     <?php if (!empty($message)) echo $message; ?>

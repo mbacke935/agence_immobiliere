@@ -40,13 +40,26 @@ try {
 }
 ?>
 
+<!-- Hero premium -->
+<section class="hero-premium">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="eyebrow mb-2">Agence immobilière de prestige</div>
+                <h1 class="fw-bold mb-3">Trouvez la résidence qui vous ressemble</h1>
+                <p class="mb-0">Des villas et appartements sélectionnés avec soin, accompagnés d'un service commercial dédié pour chaque location.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <main class="container my-5">
     <!-- Barre de Recherche & Filtres -->
-    <div class="card p-4 mb-5 border-0 shadow-sm bg-white rounded-3">
-        <h4 class="mb-3 fw-bold text-dark">Trouvez votre futur logement</h4>
+    <div class="card search-card p-4 mb-5">
+        <h4 class="mb-3 fw-bold text-dark"><i class="bi bi-search me-2"></i>Affiner votre recherche</h4>
         <form method="GET" action="index.php" class="row g-3">
             <div class="col-md-4">
-                <label for="type" class="form-label text-secondary small fw-bold">Type de bien</label>
+                <label for="type" class="form-label small fw-bold">Type de bien</label>
                 <select name="type" id="type" class="form-select">
                     <option value="">Tous les types</option>
                     <option value="Appartement" <?php echo $type === 'Appartement' ? 'selected' : ''; ?>>Appartement</option>
@@ -54,11 +67,11 @@ try {
                 </select>
             </div>
             <div class="col-md-4">
-                <label for="prix_max" class="form-label text-secondary small fw-bold">Budget max (FCFA / mois)</label>
+                <label for="prix_max" class="form-label small fw-bold">Budget max (FCFA / mois)</label>
                 <input type="number" name="prix_max" id="prix_max" class="form-control" placeholder="Ex: 500000" value="<?php echo htmlspecialchars($prix_max); ?>">
             </div>
             <div class="col-md-3">
-                <label for="superficie_min" class="form-label text-secondary small fw-bold">Superficie min (m²)</label>
+                <label for="superficie_min" class="form-label small fw-bold">Superficie min (m²)</label>
                 <input type="number" name="superficie_min" id="superficie_min" class="form-control" placeholder="Ex: 100" value="<?php echo htmlspecialchars($superficie_min); ?>">
             </div>
             <div class="col-md-1 d-flex align-items-end">
@@ -75,12 +88,12 @@ try {
                 <div class="col">
                     <div class="card h-100 property-card position-relative">
                         <!-- Badge de type -->
-                        <span class="badge position-absolute top-0 start-0 m-3 <?php echo $bien['type'] === 'Villa' ? 'bg-success' : 'bg-primary'; ?> text-white z-index-1" style="z-index: 10;">
+                        <span class="badge-type <?php echo $bien['type'] === 'Villa' ? 'bg-success' : 'bg-primary'; ?> text-white">
                             <?php echo htmlspecialchars($bien['type']); ?>
                         </span>
-                        
+
                         <!-- Image de couverture corrigée -->
-                        <?php 
+                        <?php
                             if (!empty($bien['chemin_fichier'])) {
                                 $image_url = "uploads/" . $bien['chemin_fichier'];
                             } else {
@@ -88,19 +101,19 @@ try {
                             }
                         ?>
                         <img src="<?php echo $image_url; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($bien['titre']); ?>" style="height: 220px; object-fit: cover;">
-                        
+
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title fw-bold text-dark mb-1"><?php echo htmlspecialchars($bien['titre']); ?></h5>
-                            <p class="text-muted small mb-2">📍 <?php echo htmlspecialchars($bien['adresse']); ?></p>
-                            
+                            <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill text-danger"></i> <?php echo htmlspecialchars($bien['adresse']); ?></p>
+
                             <div class="d-flex justify-content-between mb-3 text-secondary small">
-                                <span><strong><?php echo htmlspecialchars($bien['superficie']); ?></strong> m²</span>
-                                <span><strong><?php echo htmlspecialchars($bien['nb_chambres']); ?></strong> Ch.</span>
-                                <span><strong><?php echo htmlspecialchars($bien['nb_pieces']); ?></strong> Pièces</span>
+                                <span><i class="bi bi-rulers me-1"></i><strong><?php echo htmlspecialchars($bien['superficie']); ?></strong> m²</span>
+                                <span><i class="bi bi-door-closed me-1"></i><strong><?php echo htmlspecialchars($bien['nb_chambres']); ?></strong> Ch.</span>
+                                <span><i class="bi bi-house-door me-1"></i><strong><?php echo htmlspecialchars($bien['nb_pieces']); ?></strong> Pièces</span>
                             </div>
-                            
+
                             <div class="mt-auto d-flex justify-content-between align-items-center">
-                                <span class="fs-5 fw-bold text-primary"><?php echo number_format($bien['prix_mensuel'], 0, ',', ' '); ?> <small class="fs-6 text-muted">FCFA/mois</small></span>
+                                <span class="fs-5 price-tag"><?php echo number_format($bien['prix_mensuel'], 0, ',', ' '); ?> <small class="fs-6 text-muted">FCFA/mois</small></span>
                                 <a href="detail_bien.php?id=<?php echo $bien['id_bien']; ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3">Voir Détails</a>
                             </div>
                         </div>

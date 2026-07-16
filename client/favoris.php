@@ -69,7 +69,7 @@ try {
 
 <main class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold text-dark">Mes Biens Favoris</h3>
+        <h3 class="fw-bold text-dark"><i class="bi bi-heart-fill text-danger me-2"></i>Mes Biens Favoris</h3>
         <a href="../index.php" class="btn btn-outline-primary btn-sm rounded-pill px-3">Parcourir les offres</a>
     </div>
 
@@ -95,7 +95,7 @@ try {
                             </td>
                             <td class="fw-bold text-dark"><?php echo htmlspecialchars($item['titre']); ?></td>
                             <td class="text-muted small"><?php echo htmlspecialchars($item['adresse']); ?></td>
-                            <td class="fw-bold text-primary"><?php echo number_format($item['prix_mensuel'], 0, ',', ' '); ?> FCFA</td>
+                            <td class="fw-bold price-tag"><?php echo number_format($item['prix_mensuel'], 0, ',', ' '); ?> FCFA</td>
                             <td class="text-end">
                                 <a href="../detail_bien.php?id=<?php echo $item['id_bien']; ?>" class="btn btn-sm btn-outline-dark rounded-pill px-3 me-1">Consulter</a>
                                 <a href="favoris.php?action=delete&id_bien=<?php echo $item['id_bien']; ?>" class="btn btn-sm btn-danger rounded-pill px-3" onclick="return confirm('Retirer ce bien de vos favoris ?');">Retirer</a>

@@ -101,7 +101,7 @@ try {
         <!-- Formulaire d'Ajout -->
         <div class="col-lg-4">
             <div class="card p-4 border-0 shadow-sm bg-white rounded-3">
-                <h4 class="fw-bold text-dark mb-3">Ajouter un bien</h4>
+                <h4 class="fw-bold text-dark mb-3"><i class="bi bi-plus-circle me-2"></i>Ajouter un bien</h4>
                 
                 <?php if (!empty($erreur)) echo "<div class='alert alert-danger small'>$erreur</div>"; ?>
                 <?php if (!empty($succes)) echo "<div class='alert alert-success small'>$succes</div>"; ?>
@@ -160,7 +160,7 @@ try {
 
         <!-- Catalogue / Liste -->
         <div class="col-lg-8">
-            <h3 class="fw-bold text-dark mb-4">Catalogue des Offres</h3>
+            <h3 class="fw-bold text-dark mb-4"><i class="bi bi-collection me-2"></i>Catalogue des Offres</h3>
             <div class="table-responsive-custom">
                 <?php if (count($biens) > 0): ?>
                     <table class="table table-hover align-middle mb-0 small">
@@ -180,7 +180,7 @@ try {
                                         <div class="fw-bold text-dark"><?php echo htmlspecialchars($b['titre']); ?></div>
                                         <span class="text-muted text-xs"><?php echo htmlspecialchars($b['adresse']); ?></span>
                                     </td>
-                                    <td class="fw-bold"><?php echo number_format($b['prix_mensuel'], 0, ',', ' '); ?> FCFA</td>
+                                    <td class="fw-bold price-tag"><?php echo number_format($b['prix_mensuel'], 0, ',', ' '); ?> FCFA</td>
                                     <td class="text-end">
                                         <a href="modifier_bien.php?id=<?php echo $b['id_bien']; ?>" class="btn btn-xs btn-warning rounded-pill px-2 me-1">Modifier</a>
                                         <a href="../detail_bien.php?id=<?php echo $b['id_bien']; ?>" class="btn btn-xs btn-outline-dark rounded-pill px-2" target="_blank">Voir</a>

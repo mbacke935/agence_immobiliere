@@ -92,26 +92,26 @@ try {
                 <p class="text-muted"><i class="bi bi-geo-alt-fill text-danger"></i> <?php echo htmlspecialchars($bien['adresse']); ?></p>
                 <hr>
 
-                <h3 class="text-primary fw-bold mb-4"><?php echo number_format($bien['prix_mensuel'], 0, ',', ' '); ?> <span class="fs-6 text-muted">FCFA / mois</span></h3>
+                <h3 class="price-tag mb-4"><?php echo number_format($bien['prix_mensuel'], 0, ',', ' '); ?> <span class="fs-6 text-muted fw-normal">FCFA / mois</span></h3>
 
                 <h5 class="fw-bold text-dark">Caractéristiques du bien</h5>
                 <div class="row g-3 my-2 text-center">
                     <div class="col-4">
-                        <div class="p-3 bg-light rounded-3">
-                            <div class="fw-bold text-dark fs-5"><?php echo htmlspecialchars($bien['superficie']); ?></div>
-                            <small class="text-muted">m² habitables</small>
+                        <div class="stat-tile">
+                            <div class="value"><?php echo htmlspecialchars($bien['superficie']); ?></div>
+                            <div class="label">m² habitables</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="p-3 bg-light rounded-3">
-                            <div class="fw-bold text-dark fs-5"><?php echo htmlspecialchars($bien['nb_chambres']); ?></div>
-                            <small class="text-muted">Chambres</small>
+                        <div class="stat-tile">
+                            <div class="value"><?php echo htmlspecialchars($bien['nb_chambres']); ?></div>
+                            <div class="label">Chambres</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="p-3 bg-light rounded-3">
-                            <div class="fw-bold text-dark fs-5"><?php echo htmlspecialchars($bien['nb_pieces']); ?></div>
-                            <small class="text-muted">Pièces</small>
+                        <div class="stat-tile">
+                            <div class="value"><?php echo htmlspecialchars($bien['nb_pieces']); ?></div>
+                            <div class="label">Pièces</div>
                         </div>
                     </div>
                 </div>

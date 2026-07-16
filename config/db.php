@@ -3,8 +3,8 @@
 
 $host = 'localhost';
 $dbname = 'agence_immobiliere';
-$username = 'root';
-$password = ''; // À modifier si tu as un mot de passe sur ton MySQL local (ex: MAMP/Mac ou configuration personnalisée)
+$username = 'mbacke';
+$password = 'admin123'; // À modifier si tu as un mot de passe sur ton MySQL local (ex: MAMP/Mac ou configuration personnalisée)
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password, [

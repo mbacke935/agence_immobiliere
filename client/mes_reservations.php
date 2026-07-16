@@ -29,7 +29,7 @@ try {
 
 <main class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold text-dark">Mon Suivi de Réservations</h3>
+        <h3 class="fw-bold text-dark"><i class="bi bi-calendar-check me-2"></i>Mon Suivi de Réservations</h3>
         <a href="../index.php" class="btn btn-outline-primary btn-sm rounded-pill px-3">Nouvelle recherche</a>
     </div>
 
@@ -55,7 +55,7 @@ try {
                             </td>
                             <td><?php echo date('d/m/Y', strtotime($res['date_debut'])); ?></td>
                             <td><?php echo date('d/m/Y', strtotime($res['date_fin'])); ?></td>
-                            <td class="fw-bold text-secondary"><?php echo number_format($res['prix_mensuel'], 0, ',', ' '); ?> FCFA</td>
+                            <td class="fw-bold price-tag"><?php echo number_format($res['prix_mensuel'], 0, ',', ' '); ?> FCFA</td>
                             <td>
                                 <?php 
                                     // Style de badge selon le statut

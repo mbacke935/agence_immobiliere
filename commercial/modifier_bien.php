@@ -178,7 +178,7 @@ if (empty($_SESSION['token'])) {
         <div class="col-md-9">
             <div class="card p-4 border-0 shadow-sm bg-white rounded-3">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold text-dark mb-0">Modifier la fiche du bien #<?php echo $bien['id_bien']; ?></h4>
+                    <h4 class="fw-bold text-dark mb-0"><i class="bi bi-pencil-square me-2"></i>Modifier la fiche du bien #<?php echo $bien['id_bien']; ?></h4>
                     <a href="gestion_biens.php" class="btn btn-sm btn-outline-secondary rounded-pill">Retour</a>
                 </div>
                 

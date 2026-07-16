@@ -50,7 +50,7 @@ try {
 ?>
 
 <main class="container my-5">
-    <h3 class="fw-bold text-dark mb-2">Suivi Global des Réservations</h3>
+    <h3 class="fw-bold text-dark mb-2"><i class="bi bi-clipboard-check me-2"></i>Suivi Global des Réservations</h3>
     <p class="text-muted small mb-4">Gérez les demandes de location et traitez-les par ordre de priorité.</p>
 
     <?php if (!empty($message)) echo $message; ?>

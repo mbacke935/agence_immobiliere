@@ -61,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <main class="container my-5" style="max-width: 650px;">
-    <div class="card shadow-sm border-0 p-4 bg-white rounded-3">
-        <h3 class="fw-bold text-center mb-2 text-dark">Demande de Réservation</h3>
+    <div class="card shadow-sm border-0 p-4 bg-white">
+        <h3 class="fw-bold text-center mb-2 text-dark"><i class="bi bi-calendar-plus me-2"></i>Demande de Réservation</h3>
         <p class="text-muted text-center small mb-4">Vous initiez une demande de location pour le bien ci-dessous</p>
 
         <!-- Petit récapitulatif du bien sélectionné -->
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h6 class="fw-bold text-dark mb-1"><?php echo htmlspecialchars($bien['titre']); ?></h6>
                 <small class="text-muted"><i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($bien['adresse']); ?></small>
             </div>
-            <span class="fw-bold text-primary"><?php echo number_format($bien['prix_mensuel'], 0, ',', ' '); ?> FCFA</span>
+            <span class="fw-bold price-tag"><?php echo number_format($bien['prix_mensuel'], 0, ',', ' '); ?> FCFA</span>
         </div>
 
         <?php if ($succes): ?>

@@ -72,65 +72,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<main class="container my-5" style="max-width: 600px;">
-    <div class="card shadow-sm border-0 p-4 bg-white rounded-3">
-        <h3 class="fw-bold text-center mb-4 text-dark">Créer un compte</h3>
-
-        <?php if ($succes): ?>
-            <div class="alert alert-success text-center" role="alert">
-                Inscription réussie ! Vous pouvez maintenant vous <a href="connexion.php" class="alert-link">connecter ici</a>.
+<main class="container my-5" style="max-width: 950px;">
+    <div class="card auth-split">
+        <div class="row g-0">
+            <div class="col-md-5 d-none d-md-flex">
+                <div class="auth-visual">
+                    <div class="eyebrow mb-2">Bienvenue</div>
+                    <h2 class="mb-3">Rejoignez ImmoAgence</h2>
+                    <p class="mb-0">Créez votre compte pour réserver un bien, suivre vos favoris ou, en tant que commercial, gérer le catalogue de l'agence.</p>
+                </div>
             </div>
-        <?php else: ?>
-            
-            <?php if (!empty($erreurs)): ?>
-                <div class="alert alert-danger" role="alert">
-                    <ul class="mb-0">
-                        <?php foreach ($erreurs as $erreur): ?>
-                            <li><?php echo htmlspecialchars($erreur); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
+            <div class="col-md-7">
+                <div class="auth-form-panel">
+                    <h3 class="fw-bold mb-4 text-dark">Créer un compte</h3>
 
-            <form method="POST" action="inscription.php" id="form-inscription" novalidate>
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <label for="prenom" class="form-label small fw-bold text-secondary">Prénom *</label>
-                        <input type="text" name="prenom" id="prenom" class="form-control" required value="<?php echo isset($_POST['prenom']) ? htmlspecialchars($_POST['prenom']) : ''; ?>">
-                    </div>
-                    <div class="col-sm-6">
-                        <label for="nom" class="form-label small fw-bold text-secondary">Nom *</label>
-                        <input type="text" name="nom" id="nom" class="form-control" required value="<?php echo isset($_POST['nom']) ? htmlspecialchars($_POST['nom']) : ''; ?>">
-                    </div>
-                    <div class="col-12">
-                        <label for="email" class="form-label small fw-bold text-secondary">Adresse Email *</label>
-                        <input type="email" name="email" id="email" class="form-control" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
-                    </div>
-                    <div class="col-12">
-                        <label for="telephone" class="form-label small fw-bold text-secondary">Téléphone</label>
-                        <input type="tel" name="telephone" id="telephone" class="form-control" value="<?php echo isset($_POST['telephone']) ? htmlspecialchars($_POST['telephone']) : ''; ?>">
-                    </div>
-                    <div class="col-12">
-                        <label for="mot_de_passe" class="form-label small fw-bold text-secondary">Mot de passe *</label>
-                        <input type="password" name="mot_de_passe" id="mot_de_passe" class="form-control" required>
-                    </div>
-                    <div class="col-12">
-                        <label for="role" class="form-label small fw-bold text-secondary">Vous êtes ? *</label>
-                        <select name="role" id="role" class="form-select" required>
-                            <option value="Client" <?php echo (isset($_POST['role']) && $_POST['role'] === 'Client') ? 'selected' : ''; ?>>Client (Pour louer un bien)</option>
-                            <option value="Commercial" <?php echo (isset($_POST['role']) && $_POST['role'] === 'Commercial') ? 'selected' : ''; ?>>Commercial (Pour gérer l'agence)</option>
-                        </select>
-                    </div>
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold">S'inscrire</button>
-                    </div>
+                    <?php if ($succes): ?>
+                        <div class="alert alert-success text-center" role="alert">
+                            Inscription réussie ! Vous pouvez maintenant vous <a href="connexion.php" class="alert-link">connecter ici</a>.
+                        </div>
+                    <?php else: ?>
+
+                        <?php if (!empty($erreurs)): ?>
+                            <div class="alert alert-danger" role="alert">
+                                <ul class="mb-0">
+                                    <?php foreach ($erreurs as $erreur): ?>
+                                        <li><?php echo htmlspecialchars($erreur); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+
+                        <form method="POST" action="inscription.php" id="form-inscription" novalidate>
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <label for="prenom" class="form-label small fw-bold">Prénom *</label>
+                                    <input type="text" name="prenom" id="prenom" class="form-control" required value="<?php echo isset($_POST['prenom']) ? htmlspecialchars($_POST['prenom']) : ''; ?>">
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="nom" class="form-label small fw-bold">Nom *</label>
+                                    <input type="text" name="nom" id="nom" class="form-control" required value="<?php echo isset($_POST['nom']) ? htmlspecialchars($_POST['nom']) : ''; ?>">
+                                </div>
+                                <div class="col-12">
+                                    <label for="email" class="form-label small fw-bold">Adresse Email *</label>
+                                    <input type="email" name="email" id="email" class="form-control" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+                                </div>
+                                <div class="col-12">
+                                    <label for="telephone" class="form-label small fw-bold">Téléphone</label>
+                                    <input type="tel" name="telephone" id="telephone" class="form-control" value="<?php echo isset($_POST['telephone']) ? htmlspecialchars($_POST['telephone']) : ''; ?>">
+                                </div>
+                                <div class="col-12">
+                                    <label for="mot_de_passe" class="form-label small fw-bold">Mot de passe *</label>
+                                    <input type="password" name="mot_de_passe" id="mot_de_passe" class="form-control" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="role" class="form-label small fw-bold">Vous êtes ? *</label>
+                                    <select name="role" id="role" class="form-select" required>
+                                        <option value="Client" <?php echo (isset($_POST['role']) && $_POST['role'] === 'Client') ? 'selected' : ''; ?>>Client (Pour louer un bien)</option>
+                                        <option value="Commercial" <?php echo (isset($_POST['role']) && $_POST['role'] === 'Commercial') ? 'selected' : ''; ?>>Commercial (Pour gérer l'agence)</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold">S'inscrire</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <p class="text-center small text-muted mt-3 mb-0">
+                            Déjà inscrit ? <a href="connexion.php" class="text-decoration-none">Connectez-vous</a>
+                        </p>
+                    <?php endif; ?>
                 </div>
-            </form>
-            
-            <p class="text-center small text-muted mt-3 mb-0">
-                Déjà inscrit ? <a href="connexion.php" class="text-decoration-none">Connectez-vous</a>
-            </p>
-        <?php endif; ?>
+            </div>
+        </div>
     </div>
 </main>
 
