@@ -20,7 +20,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
         try {
             $sql = "UPDATE RESERVATIONS r SET statut = :statut WHERE id_reservation = :id_res AND statut = 'En attente'";
             if ($action === 'valider') {
-                $sql .= " AND NOT EXISTS (SELECT 1 FROM RESERVATIONS r2 WHERE r2.id_bien = r.id_bien AND r2.statut = 'Validé' AND r2.date_debut < r.date_fin AND r2.date_fin > r.date_debut)";
+                // La sous-requête intermédiaire matérialise les réservations validées.
+                // Cela évite l'erreur MySQL 1093 lors de la mise à jour de RESERVATIONS.
+                $sql .= " AND NOT EXISTS (
+                    SELECT 1
+                    FROM (
+                        SELECT id_bien, date_debut, date_fin
+                        FROM RESERVATIONS
+                        WHERE statut = 'Validé'
+                    ) AS reservations_validees
+                    WHERE reservations_validees.id_bien = r.id_bien
+                      AND reservations_validees.date_debut < r.date_fin
+                      AND reservations_validees.date_fin > r.date_debut
+                )";
             }
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
