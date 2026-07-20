@@ -1,10 +1,13 @@
 <?php
 // config/db.php
 
-$host = getenv('DB_HOST') ?: 'localhost';
-$dbname = getenv('DB_NAME') ?: 'agence_immobiliere';
-$username = getenv('DB_USER') ?: 'root';
-$password = getenv('DB_PASSWORD') ?: '';
+$envFile = dirname(__DIR__) . '/.env';
+$localEnv = is_readable($envFile) ? (parse_ini_file($envFile, false, INI_SCANNER_RAW) ?: []) : [];
+
+$host = getenv('DB_HOST') ?: ($localEnv['DB_HOST'] ?? 'localhost');
+$dbname = getenv('DB_NAME') ?: ($localEnv['DB_NAME'] ?? 'agence_immobiliere');
+$username = getenv('DB_USER') ?: ($localEnv['DB_USER'] ?? 'root');
+$password = getenv('DB_PASSWORD') ?: ($localEnv['DB_PASSWORD'] ?? '');
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password, [
