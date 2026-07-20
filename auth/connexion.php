@@ -1,7 +1,6 @@
 <?php
 // auth/connexion.php
-require_once '../config/db.php';
-include_once '../includes/header.php';
+require_once '../config/bootstrap.php';
 
 // Si l'utilisateur est déjà connecté, on le redirige vers l'accueil
 if (isset($_SESSION['id_user'])) {
@@ -9,9 +8,14 @@ if (isset($_SESSION['id_user'])) {
     exit();
 }
 
+include_once '../includes/header.php';
+
 $erreur = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf()) {
+        $erreur = 'Votre session a expiré. Veuillez réessayer.';
+    } else {
     $email = trim($_POST['email']);
     $mot_de_passe = $_POST['mot_de_passe'];
 
@@ -36,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['nom'] = $user['nom'];
                     $_SESSION['prenom'] = $user['prenom'];
                     $_SESSION['role'] = $user['role'];
+                    session_regenerate_id(true);
 
                     // Redirection selon le rôle ou vers la page d'accueil
                     header('Location: ../index.php');
@@ -45,8 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $erreur = "Identifiants incorrects.";
             }
         } catch (PDOException $e) {
-            $erreur = "Erreur de base de données : " . $e->getMessage();
+            error_log('Erreur de connexion utilisateur : ' . $e->getMessage());
+            $erreur = 'Impossible de vous connecter pour le moment. Veuillez réessayer.';
         }
+    }
     }
 }
 ?>
@@ -72,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
 
                     <form method="POST" action="connexion.php" id="form-connexion" novalidate>
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
                         <div class="mb-3">
                             <label for="email" class="form-label small fw-bold">Adresse Email</label>
                             <input type="email" name="email" id="email" class="form-control" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">

@@ -1,13 +1,11 @@
 <?php
 // client/reservations.php
-require_once '../config/db.php';
-include_once '../includes/header.php';
+require_once '../config/bootstrap.php';
 
 // Sécurisation de l'accès : uniquement pour les clients connectés
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'Client') {
-    header('Location: ../auth/connexion.php');
-    exit();
-}
+require_role($pdo, 'Client', '../auth/connexion.php');
+
+include_once '../includes/header.php';
 
 $id_bien = isset($_GET['id_bien']) ? (int)$_GET['id_bien'] : 0;
 $id_client = $_SESSION['id_user'];
@@ -24,13 +22,18 @@ try {
         die("<div class='container my-5 alert alert-danger'>Ce bien immobilier n'existe pas ou a été supprimé.</div>");
     }
 } catch (PDOException $e) {
-    die("Erreur de base de données : " . $e->getMessage());
+    error_log('Erreur de chargement du bien à réserver : ' . $e->getMessage());
+    http_response_code(500);
+    exit('Impossible de charger ce bien pour le moment.');
 }
 
 // Traitement de la demande de réservation
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $date_debut = $_POST['date_debut'];
-    $date_fin = $_POST['date_fin'];
+    if (!verify_csrf()) {
+        $erreur = 'Votre session a expiré. Veuillez réessayer.';
+    } else {
+    $date_debut = $_POST['date_debut'] ?? '';
+    $date_fin = $_POST['date_fin'] ?? '';
     $aujourdhui = date('Y-m-d');
 
     // Validation des dates
@@ -42,6 +45,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erreur = "La date de fin doit être strictement postérieure à la date de début.";
     } else {
         try {
+            $conflict = $pdo->prepare("SELECT 1 FROM RESERVATIONS WHERE id_bien = :id_bien AND statut = 'Validé' AND date_debut < :date_fin AND date_fin > :date_debut");
+            $conflict->execute(['id_bien' => $id_bien, 'date_debut' => $date_debut, 'date_fin' => $date_fin]);
+            if ($conflict->fetch()) {
+                $erreur = 'Ce bien est déjà réservé pour tout ou partie de cette période.';
+            } else {
             // Insertion de la réservation avec le statut 'En attente'
             $sql = "INSERT INTO RESERVATIONS (date_debut, date_fin, statut, id_client, id_bien) 
                     VALUES (:date_debut, :date_fin, 'En attente', :id_client, :id_bien)";
@@ -53,9 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'id_bien' => $id_bien
             ]);
             $succes = true;
+            }
         } catch (PDOException $e) {
-            $erreur = "Erreur lors de la réservation : " . $e->getMessage();
+            error_log('Erreur de réservation : ' . $e->getMessage());
+            $erreur = "Impossible d'enregistrer la demande pour le moment.";
         }
+    }
     }
 }
 ?>
@@ -89,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="reservations.php?id_bien=<?php echo $bien['id_bien']; ?>" novalidate>
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
                 <div class="row g-3">
                     <div class="col-sm-6">
                         <label for="date_debut" class="form-label small fw-bold text-secondary">Date d'entrée souhaitée</label>

@@ -1,6 +1,6 @@
 <?php
 // index.php
-require_once 'config/db.php';
+require_once 'config/bootstrap.php';
 include_once 'includes/header.php';
 
 // Initialisation des variables de filtrage
@@ -16,15 +16,15 @@ $sql = "SELECT b.*, i.chemin_fichier
 
 $params = [];
 
-if (!empty($type)) {
+if (in_array($type, ['Appartement', 'Villa'], true)) {
     $sql .= " AND b.type = :type";
     $params['type'] = $type;
 }
-if (!empty($prix_max)) {
+if ($prix_max !== '' && filter_var($prix_max, FILTER_VALIDATE_FLOAT) !== false && (float) $prix_max >= 0) {
     $sql .= " AND b.prix_mensuel <= :prix_max";
     $params['prix_max'] = $prix_max;
 }
-if (!empty($superficie_min)) {
+if ($superficie_min !== '' && filter_var($superficie_min, FILTER_VALIDATE_FLOAT) !== false && (float) $superficie_min >= 0) {
     $sql .= " AND b.superficie >= :superficie_min";
     $params['superficie_min'] = $superficie_min;
 }
@@ -36,7 +36,8 @@ try {
     $stmt->execute($params);
     $biens = $stmt->fetchAll();
 } catch (PDOException $e) {
-    die("Erreur lors de la récupération des biens : " . $e->getMessage());
+    error_log('Erreur de récupération des biens : ' . $e->getMessage());
+    $biens = [];
 }
 ?>
 
@@ -95,7 +96,7 @@ try {
                         <!-- Image de couverture corrigée -->
                         <?php
                             if (!empty($bien['chemin_fichier'])) {
-                                $image_url = "uploads/" . $bien['chemin_fichier'];
+                                $image_url = "uploads/" . rawurlencode($bien['chemin_fichier']);
                             } else {
                                 $image_url = "https://via.placeholder.com/600x400?text=Aucune+Image";
                             }

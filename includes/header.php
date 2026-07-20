@@ -1,8 +1,5 @@
 <?php
 // includes/header.php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 // On force le préfixe relatif selon le dossier où se trouve le script
 $current_dir = basename(dirname($_SERVER['SCRIPT_NAME']));
@@ -69,7 +66,10 @@ $prefix = ($current_dir === 'auth' || $current_dir === 'client' || $current_dir 
                     <span class="navbar-text text-white me-3">
                         Bonjour, <strong><?php echo htmlspecialchars($_SESSION['prenom']); ?></strong> (<?php echo htmlspecialchars($_SESSION['role']); ?>)
                     </span>
-                    <a href="<?php echo $prefix; ?>auth/deconnexion.php" class="btn btn-outline-danger btn-sm">Déconnexion</a>
+                    <form method="POST" action="<?php echo $prefix; ?>auth/deconnexion.php" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Déconnexion</button>
+                    </form>
                 <?php else: ?>
                     <a href="<?php echo $prefix; ?>auth/connexion.php" class="btn btn-outline-light btn-sm me-2">Connexion</a>
                     <a href="<?php echo $prefix; ?>auth/inscription.php" class="btn btn-primary btn-sm">Inscription</a>

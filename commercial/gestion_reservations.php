@@ -1,32 +1,35 @@
 <?php
 // commercial/gestion_reservations.php
-require_once '../config/db.php';
-include_once '../includes/header.php';
+require_once '../config/bootstrap.php';
 
 // Sécurisation : uniquement pour les commerciaux connectés
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'Commercial') {
-    header('Location: ../auth/connexion.php');
-    exit();
-}
+require_role($pdo, 'Commercial', '../auth/connexion.php');
+
+include_once '../includes/header.php';
 
 $message = '';
 
 // --- 1. TRAITEMENT DU CHANGEMENT DE STATUT (VALIDATION / ANNULATION) ---
-if (isset($_GET['action']) && isset($_GET['id_res'])) {
-    $id_res = (int)$_GET['id_res'];
-    $action = $_GET['action'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
+    $id_res = (int)($_POST['id_res'] ?? 0);
+    $action = $_POST['action'] ?? '';
 
     if ($id_res > 0 && in_array($action, ['valider', 'annuler'])) {
         $nouveau_statut = ($action === 'valider') ? 'Validé' : 'Annulé';
         
         try {
-            $sql = "UPDATE RESERVATIONS SET statut = :statut WHERE id_reservation = :id_res";
+            $sql = "UPDATE RESERVATIONS r SET statut = :statut WHERE id_reservation = :id_res AND statut = 'En attente'";
+            if ($action === 'valider') {
+                $sql .= " AND NOT EXISTS (SELECT 1 FROM RESERVATIONS r2 WHERE r2.id_bien = r.id_bien AND r2.statut = 'Validé' AND r2.date_debut < r.date_fin AND r2.date_fin > r.date_debut)";
+            }
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 'statut' => $nouveau_statut,
                 'id_res' => $id_res
             ]);
-            $message = "<div class='alert alert-success text-center small'>La réservation #$id_res a été mise à jour avec le statut : <strong>$nouveau_statut</strong>.</div>";
+            $message = $stmt->rowCount() === 1
+                ? "<div class='alert alert-success text-center small'>La réservation #$id_res a été mise à jour avec le statut : <strong>$nouveau_statut</strong>.</div>"
+                : "<div class='alert alert-warning text-center small'>Cette réservation ne peut plus être modifiée ou est en conflit avec une réservation validée.</div>";
         } catch (PDOException $e) {
             $message = "<div class='alert alert-danger text-center small'>Erreur lors du changement de statut : " . $e->getMessage() . "</div>";
         }
@@ -102,8 +105,8 @@ try {
                             </td>
                             <td class="text-end">
                                 <?php if ($res['statut'] === 'En attente'): ?>
-                                    <a href="gestion_reservations.php?action=valider&id_res=<?php echo $res['id_reservation']; ?>" class="btn btn-xs btn-success rounded-pill px-3 me-1 fw-bold" onclick="return confirm('Confirmer et valider cette location ?');">Valider</a>
-                                    <a href="gestion_reservations.php?action=annuler&id_res=<?php echo $res['id_reservation']; ?>" class="btn btn-xs btn-outline-danger rounded-pill px-3" onclick="return confirm('Refuser et annuler cette demande ?');">Annuler</a>
+                                    <form method="POST" action="gestion_reservations.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_res" value="<?php echo $res['id_reservation']; ?>"><input type="hidden" name="action" value="valider"><button type="submit" class="btn btn-xs btn-success rounded-pill px-3 me-1 fw-bold" onclick="return confirm('Confirmer et valider cette location ?');">Valider</button></form>
+                                    <form method="POST" action="gestion_reservations.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_res" value="<?php echo $res['id_reservation']; ?>"><input type="hidden" name="action" value="annuler"><button type="submit" class="btn btn-xs btn-outline-danger rounded-pill px-3" onclick="return confirm('Refuser et annuler cette demande ?');">Annuler</button></form>
                                 <?php else: ?>
                                     <span class="text-muted small">Traité</span>
                                 <?php endif; ?>

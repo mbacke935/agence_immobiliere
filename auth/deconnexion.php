@@ -1,9 +1,11 @@
 <?php
 // auth/deconnexion.php
 
-// Initialisation ou récupération de la session
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+require_once '../config/bootstrap.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !verify_csrf()) {
+    http_response_code(403);
+    exit('Requête invalide.');
 }
 
 // Libération de toutes les variables de session

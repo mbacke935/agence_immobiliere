@@ -79,9 +79,9 @@ CREATE TABLE `images` (
 --
 
 INSERT INTO `images` (`id_image`, `chemin_fichier`, `is_principal`, `id_bien`) VALUES
-(1, 'appartement_default.jpg', 1, 1),
-(2, 'villa_default.jpg', 1, 2),
-(3, 'appartement_default.jpg', 1, 3);
+(1, 'bien_1_1784205290_0.jpg', 1, 1),
+(2, 'bien_2_1784205121_0.jpg', 1, 2),
+(3, 'bien_3_1784204883_0.jpeg', 1, 3);
 
 -- --------------------------------------------------------
 
@@ -93,7 +93,7 @@ CREATE TABLE `reservations` (
   `id_reservation` int(11) NOT NULL,
   `date_debut` date NOT NULL,
   `date_fin` date NOT NULL,
-  `statut` enum('En attente','Valid├®','Annul├®') NOT NULL DEFAULT 'En attente',
+  `statut` enum('En attente','Validé','Annulé') NOT NULL DEFAULT 'En attente',
   `date_demande` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_client` int(11) NOT NULL,
   `id_bien` int(11) NOT NULL

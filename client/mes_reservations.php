@@ -1,13 +1,11 @@
 <?php
 // client/mes_reservations.php
-require_once '../config/db.php';
-include_once '../includes/header.php';
+require_once '../config/bootstrap.php';
 
 // Sécurisation de l'accès : uniquement pour les clients connectés
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'Client') {
-    header('Location: ../auth/connexion.php');
-    exit();
-}
+require_role($pdo, 'Client', '../auth/connexion.php');
+
+include_once '../includes/header.php';
 
 $id_client = $_SESSION['id_user'];
 
@@ -23,7 +21,8 @@ try {
     $stmt->execute(['id_client' => $id_client]);
     $reservations = $stmt->fetchAll();
 } catch (PDOException $e) {
-    die("Erreur lors de la récupération de vos réservations : " . $e->getMessage());
+    error_log('Erreur lors de la récupération des réservations client : ' . $e->getMessage());
+    $reservations = [];
 }
 ?>
 

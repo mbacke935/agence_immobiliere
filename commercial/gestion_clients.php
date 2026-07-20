@@ -1,20 +1,18 @@
 <?php
 // commercial/gestion_clients.php
-require_once '../config/db.php';
-include_once '../includes/header.php';
+require_once '../config/bootstrap.php';
 
 // Sécurisation : uniquement pour les commerciaux connectés
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'Commercial') {
-    header('Location: ../auth/connexion.php');
-    exit();
-}
+require_role($pdo, 'Commercial', '../auth/connexion.php');
+
+include_once '../includes/header.php';
 
 $message = '';
 
 // --- 1. TRAITEMENT DE LA BASCULE DE STATUT (ACTIVER / SUSPENDRE) ---
-if (isset($_GET['action']) && isset($_GET['id_user'])) {
-    $id_user_target = (int)$_GET['id_user'];
-    $action = $_GET['action'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
+    $id_user_target = (int)($_POST['id_user'] ?? 0);
+    $action = $_POST['action'] ?? '';
 
     // Empêcher un commercial de s'auto-désactiver par mégarde
     if ($id_user_target === (int)$_SESSION['id_user']) {
@@ -85,9 +83,9 @@ try {
                             <td class="text-end">
                                 <?php if ($user['id_user'] !== (int)$_SESSION['id_user']): ?>
                                     <?php if ($user['statut'] === 'Actif'): ?>
-                                        <a href="gestion_clients.php?action=suspendre&id_user=<?php echo $user['id_user']; ?>" class="btn btn-xs btn-outline-danger rounded-pill px-3" onclick="return confirm('Suspendre temporairement ce compte ? L\'utilisateur ne pourra plus se connecter.');">Suspendre</a>
+                                        <form method="POST" action="gestion_clients.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_user" value="<?php echo $user['id_user']; ?>"><input type="hidden" name="action" value="suspendre"><button type="submit" class="btn btn-xs btn-outline-danger rounded-pill px-3" onclick="return confirm('Suspendre temporairement ce compte ? L\'utilisateur ne pourra plus se connecter.');">Suspendre</button></form>
                                     <?php else: ?>
-                                        <a href="gestion_clients.php?action=activer&id_user=<?php echo $user['id_user']; ?>" class="btn btn-xs btn-success rounded-pill px-3" onclick="return confirm('Réactiver l\'accès pour ce compte ?');">Activer</a>
+                                        <form method="POST" action="gestion_clients.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_user" value="<?php echo $user['id_user']; ?>"><input type="hidden" name="action" value="activer"><button type="submit" class="btn btn-xs btn-success rounded-pill px-3" onclick="return confirm('Réactiver l\'accès pour ce compte ?');">Activer</button></form>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <span class="text-muted small italic">Votre compte</span>

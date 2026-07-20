@@ -1,18 +1,19 @@
 <?php
 // commercial/gestion_biens.php
-require_once '../config/db.php';
-include_once '../includes/header.php';
+require_once '../config/bootstrap.php';
 
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'Commercial') {
-    header('Location: ../auth/connexion.php');
-    exit();
-}
+require_role($pdo, 'Commercial', '../auth/connexion.php');
+
+include_once '../includes/header.php';
 
 $erreur = '';
 $succes = '';
 
 // --- 1. TRAITEMENT DE L'AJOUT D'UN BIEN MIGRÉ VERS MULTI-IMAGES ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_bien'])) {
+    if (!verify_csrf()) {
+        $erreur = 'Votre session a expiré. Veuillez réessayer.';
+    } else {
     $titre = trim($_POST['titre']);
     $description = trim($_POST['description']);
     $adresse = trim($_POST['adresse']);
@@ -22,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_bien'])) {
     $nb_pieces = (int)$_POST['nb_pieces'];
     $type = $_POST['type'];
 
-    if (empty($titre) || empty($adresse) || $prix_mensuel <= 0 || $superficie <= 0) {
+    if (empty($titre) || empty($adresse) || $prix_mensuel <= 0 || $superficie <= 0 || $nb_chambres < 0 || $nb_pieces < 0 || !in_array($type, ['Appartement', 'Villa'], true)) {
         $erreur = "Veuillez remplir correctement tous les champs obligatoires.";
     } else {
         try {
@@ -42,23 +43,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_bien'])) {
 
             // Gestion des uploads multiples d'images
             if (isset($_FILES['images_bien']) && !empty($_FILES['images_bien']['name'][0])) {
-                $dossier_cible = "../uploads/";
-                if (!is_dir($dossier_cible)) {
-                    mkdir($dossier_cible, 0777, true);
-                }
+                $dossier_cible = __DIR__ . '/../uploads';
 
-                $extensions_autorisees = ['jpg', 'jpeg', 'png', 'webp'];
                 $sqlImg = "INSERT INTO IMAGES (chemin_fichier, is_principal, id_bien) VALUES (:chemin, :is_principal, :id_bien)";
                 $stmtImg = $pdo->prepare($sqlImg);
 
                 foreach ($_FILES['images_bien']['name'] as $index => $nom_original) {
                     if ($_FILES['images_bien']['error'][$index] === 0) {
-                        $extension = strtolower(pathinfo($nom_original, PATHINFO_EXTENSION));
-
-                        if (in_array($extension, $extensions_autorisees)) {
-                            $nom_image = "bien_" . $id_bien . "_" . time() . "_" . $index . "." . $extension;
-                            
-                            if (move_uploaded_file($_FILES['images_bien']['tmp_name'][$index], $dossier_cible . $nom_image)) {
+                        if ($index < 10) {
+                            $nom_image = upload_image([
+                                'error' => $_FILES['images_bien']['error'][$index],
+                                'size' => $_FILES['images_bien']['size'][$index],
+                                'tmp_name' => $_FILES['images_bien']['tmp_name'][$index],
+                            ], $dossier_cible, 'bien_' . $id_bien);
+                            if ($nom_image !== null) {
                                 // La première image de la boucle devient l'image principale
                                 $is_principal = ($index === 0) ? 1 : 0;
                                 $stmtImg->execute([
@@ -73,12 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_bien'])) {
                 }
             }
 
-            // Si aucune image n'a pu être uploadée, on met une image par défaut
-            if (!$images_uploaded) {
-                $nom_image_default = ($type === 'Villa') ? 'villa_default.jpg' : 'appartement_default.jpg';
-                $sqlImg = "INSERT INTO IMAGES (chemin_fichier, is_principal, id_bien) VALUES (:chemin, 1, :id_bien)";
-                $pdo->prepare($sqlImg)->execute(['chemin' => $nom_image_default, 'id_bien' => $id_bien]);
-            }
+            // Sans image, la page publique affiche son visuel de remplacement.
 
             $pdo->commit();
             $succes = "Le bien immobilier et ses images ont été enregistrés avec succès !";
@@ -87,12 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_bien'])) {
             $erreur = "Erreur lors de l'enregistrement : " . $e->getMessage();
         }
     }
+    }
 }
 
 try {
     $biens = $pdo->query("SELECT * FROM BIENS ORDER BY id_bien DESC")->fetchAll();
 } catch (PDOException $e) {
-    die("Erreur de récupération des données : " . $e->getMessage());
+    error_log('Erreur de récupération des biens : ' . $e->getMessage());
+    $biens = [];
 }
 ?>
 
@@ -108,6 +103,7 @@ try {
 
                 <form method="POST" action="gestion_biens.php" enctype="multipart/form-data">
                     <input type="hidden" name="ajouter_bien" value="1">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
                     <div class="mb-2">
                         <label class="form-label small fw-bold text-secondary">Titre *</label>
                         <input type="text" name="titre" class="form-control form-control-sm" required>

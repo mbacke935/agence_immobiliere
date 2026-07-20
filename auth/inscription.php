@@ -1,7 +1,6 @@
 <?php
 // auth/inscription.php
-require_once '../config/db.php';
-include_once '../includes/header.php';
+require_once '../config/bootstrap.php';
 
 // Si l'utilisateur est déjà connecté, on le redirige vers l'accueil
 if (isset($_SESSION['id_user'])) {
@@ -9,17 +8,22 @@ if (isset($_SESSION['id_user'])) {
     exit();
 }
 
+include_once '../includes/header.php';
+
 $erreurs = [];
 $succes = false;
 
 // Traitement du formulaire après soumission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf()) {
+        $erreurs[] = 'Votre session a expiré. Veuillez réessayer.';
+    } else {
     $nom = trim($_POST['nom']);
     $prenom = trim($_POST['prenom']);
     $email = trim($_POST['email']);
     $telephone = trim($_POST['telephone']);
     $mot_de_passe = $_POST['mot_de_passe'];
-    $role = $_POST['role']; // 'Client' ou 'Commercial'
+    $role = 'Client';
 
     // Validation des données côté serveur
     if (empty($nom) || empty($prenom) || empty($email) || empty($mot_de_passe) || empty($role)) {
@@ -27,9 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $erreurs[] = "Le format de l'adresse email n'est pas valide.";
-    }
-    if (!in_array($role, ['Client', 'Commercial'])) {
-        $erreurs[] = "Le rôle sélectionné est invalide.";
     }
 
     // Vérification de l'unicité de l'email
@@ -41,8 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $erreurs[] = "Cette adresse email est déjà enregistrée.";
             }
         } catch (PDOException $e) {
-            $erreurs[] = "Erreur de base de données : " . $e->getMessage();
+            error_log('Erreur de vérification d’inscription : ' . $e->getMessage());
+            $erreurs[] = "Impossible de vérifier cette adresse email pour le moment.";
         }
+    }
     }
 
     // Insertion si aucune erreur
@@ -66,7 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $succes = true;
         } catch (PDOException $e) {
-            $erreurs[] = "Erreur lors de l'inscription : " . $e->getMessage();
+            error_log('Erreur d’inscription : ' . $e->getMessage());
+            $erreurs[] = "Impossible de créer le compte pour le moment.";
         }
     }
 }
@@ -103,6 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php endif; ?>
 
                         <form method="POST" action="inscription.php" id="form-inscription" novalidate>
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
                             <div class="row g-3">
                                 <div class="col-sm-6">
                                     <label for="prenom" class="form-label small fw-bold">Prénom *</label>
@@ -125,11 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <input type="password" name="mot_de_passe" id="mot_de_passe" class="form-control" required>
                                 </div>
                                 <div class="col-12">
-                                    <label for="role" class="form-label small fw-bold">Vous êtes ? *</label>
-                                    <select name="role" id="role" class="form-select" required>
-                                        <option value="Client" <?php echo (isset($_POST['role']) && $_POST['role'] === 'Client') ? 'selected' : ''; ?>>Client (Pour louer un bien)</option>
-                                        <option value="Commercial" <?php echo (isset($_POST['role']) && $_POST['role'] === 'Commercial') ? 'selected' : ''; ?>>Commercial (Pour gérer l'agence)</option>
-                                    </select>
+                                    <p class="small text-muted mb-0">Les inscriptions publiques créent un compte Client. Les comptes commerciaux sont créés par l'administration de l'agence.</p>
                                 </div>
                                 <div class="col-12 mt-4">
                                     <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold">S'inscrire</button>

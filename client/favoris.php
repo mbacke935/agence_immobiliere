@@ -1,19 +1,17 @@
 <?php
 // client/favoris.php
-require_once '../config/db.php';
-include_once '../includes/header.php';
+require_once '../config/bootstrap.php';
 
 // Sécurisation de l'accès : uniquement pour les clients connectés
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'Client') {
-    header('Location: ../auth/connexion.php');
-    exit();
-}
+require_role($pdo, 'Client', '../auth/connexion.php');
+
+include_once '../includes/header.php';
 
 $id_client = $_SESSION['id_user'];
 
 // --- 1. GESTION DE L'ACTION TOGGLE (AJOUT/SUPPRESSION) ---
-if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id_bien'])) {
-    $id_bien = (int)$_GET['id_bien'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'toggle' && verify_csrf()) {
+    $id_bien = (int)($_POST['id_bien'] ?? 0);
 
     if ($id_bien > 0) {
         try {
@@ -41,8 +39,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'toggle' && isset($_GET['id_bi
 }
 
 // --- 2. GESTION DE LA SUPPRESSION DIRECTE DEPUIS LA LISTE ---
-if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id_bien'])) {
-    $id_bien = (int)$_GET['id_bien'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete' && verify_csrf()) {
+    $id_bien = (int)($_POST['id_bien'] ?? 0);
     try {
         $stmtDelete = $pdo->prepare("DELETE FROM FAVORIS WHERE id_client = :id_client AND id_bien = :id_bien");
         $stmtDelete->execute(['id_client' => $id_client, 'id_bien' => $id_bien]);
@@ -98,7 +96,12 @@ try {
                             <td class="fw-bold price-tag"><?php echo number_format($item['prix_mensuel'], 0, ',', ' '); ?> FCFA</td>
                             <td class="text-end">
                                 <a href="../detail_bien.php?id=<?php echo $item['id_bien']; ?>" class="btn btn-sm btn-outline-dark rounded-pill px-3 me-1">Consulter</a>
-                                <a href="favoris.php?action=delete&id_bien=<?php echo $item['id_bien']; ?>" class="btn btn-sm btn-danger rounded-pill px-3" onclick="return confirm('Retirer ce bien de vos favoris ?');">Retirer</a>
+                                <form method="POST" action="favoris.php" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
+                                    <input type="hidden" name="id_bien" value="<?php echo $item['id_bien']; ?>">
+                                    <input type="hidden" name="action" value="delete">
+                                    <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3" onclick="return confirm('Retirer ce bien de vos favoris ?');">Retirer</button>
+                                </form>
                             </td>
                         </tr>
                     <?php endforeach; ?>

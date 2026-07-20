@@ -1,12 +1,8 @@
 <?php
 // commercial/modifier_bien.php
-require_once '../config/db.php';
-include_once '../includes/header.php';
+require_once '../config/bootstrap.php';
 
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'Commercial') {
-    header('Location: ../auth/connexion.php');
-    exit();
-}
+require_role($pdo, 'Commercial', '../auth/connexion.php');
 
 $id_bien = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -15,12 +11,14 @@ if ($id_bien <= 0) {
     exit();
 }
 
+include_once '../includes/header.php';
+
 $erreur = '';
 $succes = '';
 
 // --- 1. ACTION COMPLÉMENTAIRE : SUPPRESSION D'UNE IMAGE INDIVIDUELLE ---
-if (isset($_GET['supprimer_image']) && isset($_GET['token']) && $_GET['token'] === $_SESSION['token']) {
-    $id_img = (int)$_GET['supprimer_image'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'supprimer_image' && verify_csrf()) {
+    $id_img = (int)($_POST['id_image'] ?? 0);
     try {
         // Récupérer le nom du fichier pour le supprimer physiquement du serveur
         $stmtFind = $pdo->prepare("SELECT chemin_fichier, is_principal FROM IMAGES WHERE id_image = :id_img AND id_bien = :id_bien");
@@ -51,6 +49,9 @@ if (isset($_GET['supprimer_image']) && isset($_GET['token']) && $_GET['token'] =
 
 // --- 2. TRAITEMENT DU FORMULAIRE PRINCIPAL (MODIFICATION & AJOUTS) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_bien'])) {
+    if (!verify_csrf()) {
+        $erreur = 'Votre session a expiré. Veuillez réessayer.';
+    } else {
     $titre = trim($_POST['titre']);
     $description = trim($_POST['description']);
     $adresse = trim($_POST['adresse']);
@@ -60,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_bien'])) {
     $nb_pieces = (int)$_POST['nb_pieces'];
     $type = $_POST['type'];
 
-    if (empty($titre) || empty($adresse) || $prix_mensuel <= 0 || $superficie <= 0) {
+    if (empty($titre) || empty($adresse) || $prix_mensuel <= 0 || $superficie <= 0 || $nb_chambres < 0 || $nb_pieces < 0 || !in_array($type, ['Appartement', 'Villa'], true)) {
         $erreur = "Veuillez remplir correctement tous les champs obligatoires.";
     } else {
         try {
@@ -84,7 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_bien'])) {
             // 2.2. Modification/Remplacement ciblé d'images existantes
             if (isset($_FILES['remplacer_image'])) {
                 foreach ($_FILES['remplacer_image']['name'] as $id_image_existant => $nom_original) {
-                    if ($_FILES['remplacer_image']['error'][$id_image_existant] === 0) {
+                    if ($_FILES['remplacer_image']['error'][$id_image_existant] === 0
+                        && $_FILES['remplacer_image']['size'][$id_image_existant] <= 5 * 1024 * 1024
+                        && in_array((new finfo(FILEINFO_MIME_TYPE))->file($_FILES['remplacer_image']['tmp_name'][$id_image_existant]), ['image/jpeg', 'image/png', 'image/webp'], true)) {
                         $extension = strtolower(pathinfo($nom_original, PATHINFO_EXTENSION));
                         if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
                             
@@ -121,7 +124,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_bien'])) {
                 $stmtImg = $pdo->prepare($sqlImg);
 
                 foreach ($_FILES['images_bien']['name'] as $index => $nom_original) {
-                    if ($_FILES['images_bien']['error'][$index] === 0) {
+                    if ($_FILES['images_bien']['error'][$index] === 0
+                        && $_FILES['images_bien']['size'][$index] <= 5 * 1024 * 1024
+                        && in_array((new finfo(FILEINFO_MIME_TYPE))->file($_FILES['images_bien']['tmp_name'][$index]), ['image/jpeg', 'image/png', 'image/webp'], true)) {
                         $extension = strtolower(pathinfo($nom_original, PATHINFO_EXTENSION));
 
                         if (in_array($extension, $extensions_autorisees)) {
@@ -148,6 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_bien'])) {
             $erreur = "Erreur lors de la modification : " . $e->getMessage();
         }
     }
+    }
 }
 
 // --- 3. RÉCUPÉRATION DES DONNÉES À JOUR ---
@@ -167,10 +173,6 @@ try {
     die("Erreur de récupération : " . $e->getMessage());
 }
 
-// Token CSRF de sécurité pour les suppressions par lien GET
-if (empty($_SESSION['token'])) {
-    $_SESSION['token'] = bin2hex(random_bytes(32));
-}
 ?>
 
 <main class="container my-5">
@@ -187,6 +189,7 @@ if (empty($_SESSION['token'])) {
 
                 <form method="POST" action="modifier_bien.php?id=<?php echo $id_bien; ?>" enctype="multipart/form-data">
                     <input type="hidden" name="modifier_bien" value="1">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
                     
                     <div class="row g-3 mb-3">
                         <div class="col-md-8">
@@ -227,11 +230,12 @@ if (empty($_SESSION['token'])) {
                                                 </label>
                                                 
                                                 <!-- Supprimer l'image -->
-                                                <a href="modifier_bien.php?id=<?php echo $id_bien; ?>&supprimer_image=<?php echo $img['id_image']; ?>&token=<?php echo $_SESSION['token']; ?>" 
-                                                   class="btn btn-xs btn-outline-danger w-50 py-1 px-0 rounded-2" style="font-size: 11px;" 
-                                                   onclick="return confirm('Supprimer définitivement cette photo ?');">
-                                                    Supprimer
-                                                </a>
+                                                <form method="POST" action="modifier_bien.php?id=<?php echo $id_bien; ?>" class="w-50">
+                                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
+                                                    <input type="hidden" name="action" value="supprimer_image">
+                                                    <input type="hidden" name="id_image" value="<?php echo $img['id_image']; ?>">
+                                                    <button type="submit" class="btn btn-xs btn-outline-danger w-100 py-1 px-0 rounded-2" style="font-size: 11px;" onclick="return confirm('Supprimer définitivement cette photo ?');">Supprimer</button>
+                                                </form>
                                             </div>
 
                                         </div>

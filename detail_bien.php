@@ -1,7 +1,6 @@
 <?php
 // detail_bien.php
-require_once 'config/db.php';
-include_once 'includes/header.php';
+require_once 'config/bootstrap.php';
 
 $id_bien = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -9,6 +8,8 @@ if ($id_bien <= 0) {
     header('Location: index.php');
     exit();
 }
+
+include_once 'includes/header.php';
 
 try {
     // 1. Récupération des détails du bien
@@ -38,7 +39,9 @@ try {
         }
     }
 } catch (PDOException $e) {
-    die("Erreur lors du chargement des données : " . $e->getMessage());
+    error_log('Erreur lors du chargement du bien : ' . $e->getMessage());
+    http_response_code(500);
+    exit('Impossible de charger ce bien pour le moment.');
 }
 ?>
 
@@ -52,7 +55,7 @@ try {
                         <?php foreach ($images as $index => $img): ?>
                             <div class="carousel-item <?php echo $index === 0 ? 'active' : ''; ?>">
                                 <!-- Chemin de l'image corrigé ici -->
-                                <img src="uploads/<?php echo htmlspecialchars($img['chemin_fichier']); ?>" class="d-block w-100" alt="Image de l'offre" style="height: 450px; object-fit: cover; border-radius: 6px;">
+                                <img src="uploads/<?php echo rawurlencode($img['chemin_fichier']); ?>" class="d-block w-100" alt="Image de l'offre" style="height: 450px; object-fit: cover; border-radius: 6px;">
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -82,9 +85,14 @@ try {
                     
                     <!-- Bouton Favoris dynamique -->
                     <?php if (isset($_SESSION['id_user']) && $_SESSION['role'] === 'Client'): ?>
-                        <a href="client/favoris.php?id_bien=<?php echo $bien['id_bien']; ?>&action=toggle" class="btn btn-outline-danger btn-favoris rounded-circle p-2">
+                        <form method="POST" action="client/favoris.php" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
+                            <input type="hidden" name="id_bien" value="<?php echo $bien['id_bien']; ?>">
+                            <input type="hidden" name="action" value="toggle">
+                            <button type="submit" class="btn btn-outline-danger btn-favoris rounded-circle p-2" aria-label="Gérer le favori">
                             <?php echo $is_favori ? '❤️' : '🤍'; ?>
-                        </a>
+                            </button>
+                        </form>
                     <?php endif; ?>
                 </div>
 
