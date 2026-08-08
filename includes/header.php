@@ -49,6 +49,9 @@ $prefix = ($current_dir === 'auth' || $current_dir === 'client' || $current_dir 
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo $prefix; ?>commercial/gestion_clients.php">Gestion Comptes</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?php echo $prefix; ?>commercial/historique.php">Historique Clients</a>
+                        </li>
                     <?php elseif ($_SESSION['role'] === 'Client'): ?>
                         <!-- Liens spécifiques au Client -->
                         <li class="nav-item">

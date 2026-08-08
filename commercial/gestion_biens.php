@@ -9,6 +9,47 @@ include_once '../includes/header.php';
 $erreur = '';
 $succes = '';
 
+// --- 0. TRAITEMENT DE LA SUPPRESSION D'UN BIEN ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer_bien'])) {
+    if (!verify_csrf()) {
+        $erreur = 'Votre session a expiré. Veuillez réessayer.';
+    } else {
+        $id_bien_suppr = (int)($_POST['id_bien'] ?? 0);
+
+        $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM RESERVATIONS WHERE id_bien = :id_bien AND statut = 'Validé'");
+        $stmtCheck->execute(['id_bien' => $id_bien_suppr]);
+
+        if ($stmtCheck->fetchColumn() > 0) {
+            $erreur = "Impossible de supprimer ce bien : une location est actuellement en cours sur ce bien.";
+        } else {
+            try {
+                $pdo->beginTransaction();
+
+                $stmtImages = $pdo->prepare("SELECT chemin_fichier FROM IMAGES WHERE id_bien = :id_bien");
+                $stmtImages->execute(['id_bien' => $id_bien_suppr]);
+                $fichiers = $stmtImages->fetchAll(PDO::FETCH_COLUMN);
+
+                $stmtDel = $pdo->prepare("DELETE FROM BIENS WHERE id_bien = :id_bien");
+                $stmtDel->execute(['id_bien' => $id_bien_suppr]);
+
+                $pdo->commit();
+
+                foreach ($fichiers as $fichier) {
+                    $chemin = __DIR__ . '/../uploads/' . $fichier;
+                    if (is_file($chemin)) {
+                        unlink($chemin);
+                    }
+                }
+
+                $succes = "Le bien #$id_bien_suppr et ses images ont été supprimés.";
+            } catch (PDOException $e) {
+                $pdo->rollBack();
+                $erreur = "Erreur lors de la suppression : " . $e->getMessage();
+            }
+        }
+    }
+}
+
 // --- 1. TRAITEMENT DE L'AJOUT D'UN BIEN MIGRÉ VERS MULTI-IMAGES ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_bien'])) {
     if (!verify_csrf()) {
@@ -179,7 +220,13 @@ try {
                                     <td class="fw-bold price-tag"><?php echo number_format($b['prix_mensuel'], 0, ',', ' '); ?> FCFA</td>
                                     <td class="text-end">
                                         <a href="modifier_bien.php?id=<?php echo $b['id_bien']; ?>" class="btn btn-xs btn-warning rounded-pill px-2 me-1">Modifier</a>
-                                        <a href="../detail_bien.php?id=<?php echo $b['id_bien']; ?>" class="btn btn-xs btn-outline-dark rounded-pill px-2" target="_blank">Voir</a>
+                                        <a href="../detail_bien.php?id=<?php echo $b['id_bien']; ?>" class="btn btn-xs btn-outline-dark rounded-pill px-2 me-1" target="_blank">Voir</a>
+                                        <form method="POST" action="gestion_biens.php" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
+                                            <input type="hidden" name="id_bien" value="<?php echo $b['id_bien']; ?>">
+                                            <input type="hidden" name="supprimer_bien" value="1">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger rounded-pill px-2" onclick="return confirm('Supprimer définitivement ce bien et toutes ses images/réservations liées ?');">Supprimer</button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

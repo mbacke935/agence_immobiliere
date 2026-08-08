@@ -14,12 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
     $id_user_target = (int)($_POST['id_user'] ?? 0);
     $action = $_POST['action'] ?? '';
 
-    // Empêcher un commercial de s'auto-désactiver par mégarde
+    // Empêcher un commercial de s'auto-désactiver ou de s'auto-supprimer par mégarde
     if ($id_user_target === (int)$_SESSION['id_user']) {
-        $message = "<div class='alert alert-danger text-center small'>Action impossible : Vous ne pouvez pas désactiver votre propre compte.</div>";
+        $message = "<div class='alert alert-danger text-center small'>Action impossible : Vous ne pouvez pas modifier votre propre compte depuis cette page.</div>";
     } elseif ($id_user_target > 0 && in_array($action, ['activer', 'suspendre'])) {
         $nouveau_statut = ($action === 'activer') ? 'Actif' : 'Inactif';
-        
+
         try {
             $sql = "UPDATE UTILISATEURS SET statut = :statut WHERE id_user = :id_user";
             $stmt = $pdo->prepare($sql);
@@ -30,6 +30,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
             $message = "<div class='alert alert-success text-center small'>Le statut de l'utilisateur #$id_user_target a été configuré sur : <strong>$nouveau_statut</strong>.</div>";
         } catch (PDOException $e) {
             $message = "<div class='alert alert-danger text-center small'>Erreur lors du changement de statut : " . $e->getMessage() . "</div>";
+        }
+    } elseif ($id_user_target > 0 && $action === 'supprimer') {
+        // La suppression n'est autorisée que pour les comptes Client (jamais un autre Commercial)
+        try {
+            $stmtRole = $pdo->prepare("SELECT role FROM UTILISATEURS WHERE id_user = :id_user");
+            $stmtRole->execute(['id_user' => $id_user_target]);
+            $roleCible = $stmtRole->fetchColumn();
+
+            if ($roleCible !== 'Client') {
+                $message = "<div class='alert alert-danger text-center small'>Seuls les comptes Client peuvent être supprimés depuis cette page.</div>";
+            } else {
+                $stmtDel = $pdo->prepare("DELETE FROM UTILISATEURS WHERE id_user = :id_user AND role = 'Client'");
+                $stmtDel->execute(['id_user' => $id_user_target]);
+                $message = "<div class='alert alert-success text-center small'>Le compte client #$id_user_target a été supprimé définitivement, avec son historique de favoris et de réservations.</div>";
+            }
+        } catch (PDOException $e) {
+            $message = "<div class='alert alert-danger text-center small'>Erreur lors de la suppression : " . $e->getMessage() . "</div>";
         }
     }
 }
@@ -82,10 +99,16 @@ try {
                             </td>
                             <td class="text-end">
                                 <?php if ($user['id_user'] !== (int)$_SESSION['id_user']): ?>
+                                    <?php if ($user['role'] === 'Client'): ?>
+                                        <a href="historique.php?id_client=<?php echo $user['id_user']; ?>" class="btn btn-xs btn-outline-secondary rounded-pill px-3 me-1">Historique</a>
+                                    <?php endif; ?>
                                     <?php if ($user['statut'] === 'Actif'): ?>
-                                        <form method="POST" action="gestion_clients.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_user" value="<?php echo $user['id_user']; ?>"><input type="hidden" name="action" value="suspendre"><button type="submit" class="btn btn-xs btn-outline-danger rounded-pill px-3" onclick="return confirm('Suspendre temporairement ce compte ? L\'utilisateur ne pourra plus se connecter.');">Suspendre</button></form>
+                                        <form method="POST" action="gestion_clients.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_user" value="<?php echo $user['id_user']; ?>"><input type="hidden" name="action" value="suspendre"><button type="submit" class="btn btn-xs btn-outline-danger rounded-pill px-3 me-1" onclick="return confirm('Suspendre temporairement ce compte ? L\'utilisateur ne pourra plus se connecter.');">Suspendre</button></form>
                                     <?php else: ?>
-                                        <form method="POST" action="gestion_clients.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_user" value="<?php echo $user['id_user']; ?>"><input type="hidden" name="action" value="activer"><button type="submit" class="btn btn-xs btn-success rounded-pill px-3" onclick="return confirm('Réactiver l\'accès pour ce compte ?');">Activer</button></form>
+                                        <form method="POST" action="gestion_clients.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_user" value="<?php echo $user['id_user']; ?>"><input type="hidden" name="action" value="activer"><button type="submit" class="btn btn-xs btn-success rounded-pill px-3 me-1" onclick="return confirm('Réactiver l\'accès pour ce compte ?');">Activer</button></form>
+                                    <?php endif; ?>
+                                    <?php if ($user['role'] === 'Client'): ?>
+                                        <form method="POST" action="gestion_clients.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_user" value="<?php echo $user['id_user']; ?>"><input type="hidden" name="action" value="supprimer"><button type="submit" class="btn btn-xs btn-danger rounded-pill px-3" onclick="return confirm('Supprimer définitivement ce compte client ? Ses favoris et réservations seront aussi supprimés. Cette action est irréversible.');">Supprimer</button></form>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <span class="text-muted small italic">Votre compte</span>

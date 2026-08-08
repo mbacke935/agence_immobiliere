@@ -14,7 +14,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
     $id_res = (int)($_POST['id_res'] ?? 0);
     $action = $_POST['action'] ?? '';
 
-    if ($id_res > 0 && in_array($action, ['valider', 'annuler'])) {
+    if ($id_res > 0 && $action === 'modifier') {
+        $date_debut = $_POST['date_debut'] ?? '';
+        $date_fin = $_POST['date_fin'] ?? '';
+
+        $debut = DateTime::createFromFormat('Y-m-d', $date_debut);
+        $fin = DateTime::createFromFormat('Y-m-d', $date_fin);
+
+        if (!$debut || !$fin || $fin <= $debut) {
+            $message = "<div class='alert alert-danger text-center small'>Dates invalides : la date de fin doit être postérieure à la date de début.</div>";
+        } else {
+            try {
+                $sql = "UPDATE RESERVATIONS r SET date_debut = :date_debut, date_fin = :date_fin
+                        WHERE id_reservation = :id_res AND statut = 'En attente'
+                        AND NOT EXISTS (
+                            SELECT 1 FROM (
+                                SELECT id_bien, date_debut, date_fin
+                                FROM RESERVATIONS
+                                WHERE statut = 'Validé'
+                            ) AS reservations_validees
+                            WHERE reservations_validees.id_bien = r.id_bien
+                              AND reservations_validees.date_debut < :date_fin2
+                              AND reservations_validees.date_fin > :date_debut2
+                        )";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    'date_debut' => $date_debut,
+                    'date_fin' => $date_fin,
+                    'id_res' => $id_res,
+                    'date_fin2' => $date_fin,
+                    'date_debut2' => $date_debut,
+                ]);
+                $message = $stmt->rowCount() === 1
+                    ? "<div class='alert alert-success text-center small'>La réservation #$id_res a été modifiée avec succès.</div>"
+                    : "<div class='alert alert-warning text-center small'>Impossible de modifier : la réservation n'est plus en attente ou les nouvelles dates sont en conflit avec une location validée.</div>";
+            } catch (PDOException $e) {
+                $message = "<div class='alert alert-danger text-center small'>Erreur lors de la modification : " . $e->getMessage() . "</div>";
+            }
+        }
+    } elseif ($id_res > 0 && in_array($action, ['valider', 'annuler'])) {
         $nouveau_statut = ($action === 'valider') ? 'Validé' : 'Annulé';
         
         try {
@@ -117,8 +155,40 @@ try {
                             </td>
                             <td class="text-end">
                                 <?php if ($res['statut'] === 'En attente'): ?>
+                                    <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-3 me-1" data-bs-toggle="modal" data-bs-target="#modifierRes<?php echo $res['id_reservation']; ?>">Modifier</button>
                                     <form method="POST" action="gestion_reservations.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_res" value="<?php echo $res['id_reservation']; ?>"><input type="hidden" name="action" value="valider"><button type="submit" class="btn btn-xs btn-success rounded-pill px-3 me-1 fw-bold" onclick="return confirm('Confirmer et valider cette location ?');">Valider</button></form>
                                     <form method="POST" action="gestion_reservations.php" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>"><input type="hidden" name="id_res" value="<?php echo $res['id_reservation']; ?>"><input type="hidden" name="action" value="annuler"><button type="submit" class="btn btn-xs btn-outline-danger rounded-pill px-3" onclick="return confirm('Refuser et annuler cette demande ?');">Annuler</button></form>
+
+                                    <!-- Modal de modification des dates -->
+                                    <div class="modal fade" id="modifierRes<?php echo $res['id_reservation']; ?>" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form method="POST" action="gestion_reservations.php">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Modifier la réservation #<?php echo $res['id_reservation']; ?></h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                                    </div>
+                                                    <div class="modal-body text-start">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
+                                                        <input type="hidden" name="id_res" value="<?php echo $res['id_reservation']; ?>">
+                                                        <input type="hidden" name="action" value="modifier">
+                                                        <div class="mb-2">
+                                                            <label class="form-label small fw-bold text-secondary">Date de début</label>
+                                                            <input type="date" name="date_debut" class="form-control form-control-sm" value="<?php echo htmlspecialchars($res['date_debut']); ?>" required>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <label class="form-label small fw-bold text-secondary">Date de fin</label>
+                                                            <input type="date" name="date_fin" class="form-control form-control-sm" value="<?php echo htmlspecialchars($res['date_fin']); ?>" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-sm btn-primary rounded-pill">Enregistrer</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 <?php else: ?>
                                     <span class="text-muted small">Traité</span>
                                 <?php endif; ?>
